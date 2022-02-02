@@ -1,0 +1,9 @@
+{temperature: {trend: 1, critical_in: 2, avg: 16.552, status: -1, curr: 16.625, advises: []
+    }, ph: {trend: 0, critical_in: -1, avg: 7.10, status: 0, curr: 7.09, advises: []
+    }, nh3: {trend: 0, critical_in: -1, avg: 0.002, status: 0, curr: 0.001, advises: []
+    }, nh4: {trend: 1, critical_in: -1, avg: 132.20, status: 1, curr: 131.62, advises: []
+    }, o2: {trend: 0, critical_in: -1, avg: 9.8, status: 0, curr: 9.8, advises: []
+    }, lux: {status: null, curr: 34, advises: []
+    }, par: {curr: 0, advises: []
+    }, kelvin: {curr: 0, advises: []
+    }
