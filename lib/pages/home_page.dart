@@ -34,38 +34,6 @@ Map data = {
   'airPressure': 0.0
 };
 
-// double ph = 0;
-// double maxPh = 0;
-// double minPh = 0;
-
-// double waterTemp = 0;
-// double maxWaterTemp = 0;
-// double minWaterTemp = 0;
-
-// double nh3 = 0;
-// double maxNh3 = 0;
-// double minNh3 = 0;
-
-// double o2 = 0;
-// double maxO2 = 0;
-// double minO2 = 0;
-
-// double nh4 = 0;
-// double maxNh4 = 0;
-// double minNh4 = 0;
-
-// double light = 0;
-
-// double outsideTemp = 0;
-// double humidity = 0;
-// double wind = 0;
-// double airPressure = 0;
-
-// String seneyeUsername = "aquaponics@pedarecc.sa.edu.au";
-// String seneyePassword = "AquaPonics2017Pedare";
-
-// String openWeatherID = "4efb56d2ec0b85ca2aced9c3926a03d8";
-// String openWeatherLocation = "Adelaide";
 
 class SettingsStorage {
   Future<String> get _localPath async {
