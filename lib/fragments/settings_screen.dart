@@ -25,6 +25,12 @@ class Login {
   final ValueChanged<String>? onPassChanged;
 }
 
+class RefreshFeild {
+  const RefreshFeild({required this.period, this.onPeriodChanged});
+  final int period;
+  final ValueChanged<String>? onPeriodChanged;
+}
+
 class Settings extends StatelessWidget {
   const Settings(
       {Key? key,
@@ -34,7 +40,8 @@ class Settings extends StatelessWidget {
       required this.nh4,
       required this.o2,
       required this.seneyeInfo,
-      required this.openweatherInfo})
+      required this.openweatherInfo,
+      required this.refreshPeriod})
       : super(key: key);
   final Setting waterTemp;
   final Setting ph;
@@ -43,6 +50,7 @@ class Settings extends StatelessWidget {
   final Setting o2;
   final Login seneyeInfo;
   final Login openweatherInfo;
+  final RefreshFeild refreshPeriod;
 
   @override
   Widget build(BuildContext context) {
@@ -108,6 +116,16 @@ class Settings extends StatelessWidget {
           height: 3,
           color: Colors.black38,
         ),
+        RefreshPeriod(
+          label: "Refresh Period (sec)",
+          value: refreshPeriod.period,
+          onChanged: refreshPeriod.onPeriodChanged,
+        ),
+        const Divider(
+          thickness: 3,
+          height: 3,
+          color: Colors.black38,
+        ),
         ApiKeys(
           label: "Seneye Login",
           username: seneyeInfo.username,
@@ -131,6 +149,7 @@ class Settings extends StatelessWidget {
           passwordChanged: openweatherInfo.onPassChanged,
           usernameChanged: openweatherInfo.onUserChanged,
         ),
+        
       ],
     );
   }
@@ -297,23 +316,23 @@ class ApiKeys extends StatelessWidget {
                     child: Padding(
                         padding: const EdgeInsets.only(right: 20),
                         child: ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: [
-                          SizedBox(
-                            height: 50,
-                            width: 1000, 
-                            child: TextFormField(
-                              initialValue: username,
-                              textAlign: TextAlign.left,
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
+                            scrollDirection: Axis.horizontal,
+                            children: [
+                              SizedBox(
+                                height: 50,
+                                width: 1000,
+                                child: TextFormField(
+                                  initialValue: username,
+                                  textAlign: TextAlign.left,
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  style: GoogleFonts.nunito(
+                                      color: Colors.white, fontSize: 18),
+                                  onChanged: usernameChanged,
+                                ),
                               ),
-                              style: GoogleFonts.nunito(
-                                  color: Colors.white, fontSize: 18),
-                              onChanged: usernameChanged,
-                            ),
-                          ),
-                        ])),
+                            ])),
                   ),
                 )
               ],
@@ -339,28 +358,81 @@ class ApiKeys extends StatelessWidget {
                     child: Padding(
                         padding: const EdgeInsets.only(right: 20),
                         child: ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: [
-                          SizedBox(
-                            height: 50,
-                            width: 1000, 
-                            child: TextFormField(
-                              initialValue: password,
-                              obscureText: true,
-                              textAlign: TextAlign.left,
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
+                            scrollDirection: Axis.horizontal,
+                            children: [
+                              SizedBox(
+                                height: 50,
+                                width: 1000,
+                                child: TextFormField(
+                                  initialValue: password,
+                                  obscureText: true,
+                                  textAlign: TextAlign.left,
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  style: GoogleFonts.nunito(
+                                      color: Colors.white, fontSize: 18),
+                                  onChanged: passwordChanged,
+                                ),
                               ),
-                              style: GoogleFonts.nunito(
-                                  color: Colors.white, fontSize: 18),
-                              onChanged: passwordChanged,
-                            ),
-                          ),
-                        ])),
+                            ])),
                   ),
                 )
               ],
             )),
+      ],
+    );
+  }
+}
+
+class RefreshPeriod extends StatelessWidget {
+  const RefreshPeriod(
+      {Key? key, required this.label, required this.value, this.onChanged})
+      : super(key: key);
+
+  final String label;
+  final int value;
+  final ValueChanged<String>? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.only(left: 15),
+          width: MediaQuery.of(context).size.width,
+          height: 50,
+          alignment: Alignment.center,
+          color: Colors.black,
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Text(
+              "$label:",
+              style: GoogleFonts.nunito(fontSize: 22, color: Colors.white),
+            ),
+          ),
+        ),
+        Container(
+          height: 50,
+          padding: const EdgeInsets.only(left: 40),
+          child: Expanded(
+            child: Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: Padding(
+                  padding: const EdgeInsets.only(right: 20),
+                  child: TextFormField(
+                    initialValue: value.toString(),
+                    textAlign: TextAlign.left,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                    ),
+                    style: GoogleFonts.nunito(
+                        color: Colors.white, fontSize: 18),
+                    onChanged: onChanged,
+                  )),
+            ),
+          ),
+        ),
       ],
     );
   }

@@ -11,6 +11,15 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+const AndroidInitializationSettings androidInit = AndroidInitializationSettings('app_icon');
+const IOSInitializationSettings iOSInit = IOSInitializationSettings();
+
+const  InitializationSettings initializationSettings = InitializationSettings(android: androidInit, iOS: iOSInit);
+final FlutterLocalNotificationsPlugin notifications = FlutterLocalNotificationsPlugin();
+
+
 Map settings = {
   'ph': {'max': 0.0, 'min': 0.0},
   'waterTemp': {'max': 0.0, 'min': 0.0},
@@ -18,8 +27,11 @@ Map settings = {
   'o2': {'max': 0.0, 'min': 0.0},
   'nh4': {'max': 0.0, 'min': 0.0},
   'seneye': {'username': "default", 'password': 'default'},
-  'openWeather': {'id': "default", 'location': 'default'}
+  'openWeather': {'id': "default", 'location': 'default'},
+  'refreshPeriod': 300,
 };
+
+var settingsToNotify = ["ph", "waterTemp", "nh3", "o2", "nh4"];
 
 Map data = {
   'ph': 0.0,
@@ -34,7 +46,6 @@ Map data = {
   'airPressure': 0.0
 };
 
-
 class SettingsStorage {
   Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
@@ -48,11 +59,15 @@ class SettingsStorage {
   }
 
   void readSettings() async {
-    final file = await _localFile;
+    try {
+      final file = await _localFile;
 
-    // Read the file
-    final contents = await file.readAsString();
-    settings = jsonDecode(contents);
+      // Read the file
+      final contents = await file.readAsString();
+      settings = jsonDecode(contents);
+    } on Exception {
+      settings = settings;
+    }
   }
 
   Future<File> writeSettings(Map setting) async {
@@ -109,15 +124,6 @@ class _HomePageState extends State<HomePage> {
 
     Map aquaponicsData = jsonDecode(seneyeResp.body);
     Map weatherData = jsonDecode(weatherResp.body);
-    print(seneyeUsername +
-          " " +
-          seneyePassword +
-          "\n" +
-          openWeatherID +
-          " " +
-          openWeatherLocation);
-      print(aquaponicsData);
-      print(weatherData);
     if (!(aquaponicsData.containsKey("message") || weatherData["cod"] != 200)) {
       setState(() {
         data['ph'] = double.parse(aquaponicsData['ph']['curr']);
@@ -132,6 +138,40 @@ class _HomePageState extends State<HomePage> {
         data['airPressure'] = weatherData['main']['pressure'].toDouble();
       });
     }
+
+    int index = 0;
+    for (var element in settingsToNotify) {
+      String suffix = "";
+      switch (element) {
+        case "waterTemp":
+          suffix = "°C";
+          break;
+        case "nh3" "nh4":
+          suffix = "ppm";
+          break;
+        default:
+          break;
+      }
+      if (pickColor(settings[element]['min'], settings[element]['max'],
+              data[element]) ==
+          Colors.red) {
+        notifications.show(
+            index,
+            element + " Out Of Defined Range",
+            "The " +
+                element +
+                " is currently at: " +
+                data[element].toString() +
+                suffix,
+            const NotificationDetails(
+                android:
+                    AndroidNotificationDetails("rangeAlert", "Range Alert"),
+                iOS: IOSNotificationDetails()));
+      }
+    }
+
+    var timer =
+        Timer(Duration(seconds: settings['refreshPeriod']), () => refresh());
   }
 
   int _selectedDrawerIndex = 0;
@@ -170,86 +210,91 @@ class _HomePageState extends State<HomePage> {
         );
       case 1:
         return Settings(
-          waterTemp: Setting(
-              max: settings['waterTemp']['max'],
-              min: settings['waterTemp']['min'],
-              onMaxChanged: (value) => setState(() {
-                    settings['waterTemp']['max'] = value;
-                    widget.a.writeSettings(settings);
-                  }),
-              onMinChanged: (value) => setState(() {
-                    settings['waterTemp']['min'] = value;
-                    widget.a.writeSettings(settings);
-                  })),
-          ph: Setting(
-              max: settings['ph']['max'],
-              min: settings['ph']['min'],
-              onMaxChanged: (value) => setState(() {
-                    settings['ph']['max'] = value;
-                    widget.a.writeSettings(settings);
-                  }),
-              onMinChanged: (value) => setState(() {
-                    settings['ph']['min'] = value;
-                    widget.a.writeSettings(settings);
-                  })),
-          nh3: Setting(
-              max: settings['nh3']['max'],
-              min: settings['nh3']['min'],
-              onMaxChanged: (value) => setState(() {
-                    settings['nh3']['max'] = value;
-                    widget.a.writeSettings(settings);
-                  }),
-              onMinChanged: (value) => setState(() {
-                    settings['nh3']['min'] = value;
-                    widget.a.writeSettings(settings);
-                  })),
-          nh4: Setting(
-              max: settings['nh4']['max'],
-              min: settings['nh4']['min'],
-              onMaxChanged: (value) => setState(() {
-                    settings['nh4']['max'] = value;
-                    widget.a.writeSettings(settings);
-                  }),
-              onMinChanged: (value) => setState(() {
-                    settings['nh4']['min'] = value;
-                    widget.a.writeSettings(settings);
-                  })),
-          o2: Setting(
-              max: settings['o2']['max'],
-              min: settings['o2']['min'],
-              onMaxChanged: (value) => setState(() {
-                    settings['o2']['max'] = value;
-                    widget.a.writeSettings(settings);
-                  }),
-              onMinChanged: (value) => setState(() {
-                    settings['o2']['min'] = value;
-                    widget.a.writeSettings(settings);
-                  })),
-          seneyeInfo: Login(
-            username: settings['seneye']['username'],
-            password: settings['seneye']['password'],
-            onPassChanged: (value) => setState(() {
-              settings['seneye']['password'] = value;
-              widget.a.writeSettings(settings);
-            }),
-            onUserChanged: (value) => setState(() {
-              settings['seneye']['username'] = value;
-              widget.a.writeSettings(settings);
-            }),
-          ),
-          openweatherInfo: Login(
-            username: settings['openWeather']['location'],
-            password: settings['openWeather']['id'],
-            onPassChanged: (value) => setState(() {
-              settings['openWeather']['id'] = value;
-              widget.a.writeSettings(settings);
-            }),
-            onUserChanged: (value) => setState(() {
-              settings['openWeather']['location'] = value;
-              widget.a.writeSettings(settings);
-            }),
-          ),
-        );
+            waterTemp: Setting(
+                max: settings['waterTemp']['max'],
+                min: settings['waterTemp']['min'],
+                onMaxChanged: (value) => setState(() {
+                      settings['waterTemp']['max'] = value;
+                      widget.a.writeSettings(settings);
+                    }),
+                onMinChanged: (value) => setState(() {
+                      settings['waterTemp']['min'] = value;
+                      widget.a.writeSettings(settings);
+                    })),
+            ph: Setting(
+                max: settings['ph']['max'],
+                min: settings['ph']['min'],
+                onMaxChanged: (value) => setState(() {
+                      settings['ph']['max'] = value;
+                      widget.a.writeSettings(settings);
+                    }),
+                onMinChanged: (value) => setState(() {
+                      settings['ph']['min'] = value;
+                      widget.a.writeSettings(settings);
+                    })),
+            nh3: Setting(
+                max: settings['nh3']['max'],
+                min: settings['nh3']['min'],
+                onMaxChanged: (value) => setState(() {
+                      settings['nh3']['max'] = value;
+                      widget.a.writeSettings(settings);
+                    }),
+                onMinChanged: (value) => setState(() {
+                      settings['nh3']['min'] = value;
+                      widget.a.writeSettings(settings);
+                    })),
+            nh4: Setting(
+                max: settings['nh4']['max'],
+                min: settings['nh4']['min'],
+                onMaxChanged: (value) => setState(() {
+                      settings['nh4']['max'] = value;
+                      widget.a.writeSettings(settings);
+                    }),
+                onMinChanged: (value) => setState(() {
+                      settings['nh4']['min'] = value;
+                      widget.a.writeSettings(settings);
+                    })),
+            o2: Setting(
+                max: settings['o2']['max'],
+                min: settings['o2']['min'],
+                onMaxChanged: (value) => setState(() {
+                      settings['o2']['max'] = value;
+                      widget.a.writeSettings(settings);
+                    }),
+                onMinChanged: (value) => setState(() {
+                      settings['o2']['min'] = value;
+                      widget.a.writeSettings(settings);
+                    })),
+            seneyeInfo: Login(
+              username: settings['seneye']['username'],
+              password: settings['seneye']['password'],
+              onPassChanged: (value) => setState(() {
+                settings['seneye']['password'] = value;
+                widget.a.writeSettings(settings);
+              }),
+              onUserChanged: (value) => setState(() {
+                settings['seneye']['username'] = value;
+                widget.a.writeSettings(settings);
+              }),
+            ),
+            openweatherInfo: Login(
+              username: settings['openWeather']['location'],
+              password: settings['openWeather']['id'],
+              onPassChanged: (value) => setState(() {
+                settings['openWeather']['id'] = value;
+                widget.a.writeSettings(settings);
+              }),
+              onUserChanged: (value) => setState(() {
+                settings['openWeather']['location'] = value;
+                widget.a.writeSettings(settings);
+              }),
+            ),
+            refreshPeriod: RefreshFeild(
+                period: settings['refreshPeriod'],
+                onPeriodChanged: (value) => setState(() {
+                      settings['refreshPeriod'] = double.parse(value);
+                      widget.a.writeSettings(settings);
+                    })));
 
       default:
         return const Text("Error");
@@ -263,6 +308,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    notifications.initialize(initializationSettings);
     var drawerOptions = <Widget>[];
     for (var i = 0; i < widget.drawerItems.length; i++) {
       var d = widget.drawerItems[i];
