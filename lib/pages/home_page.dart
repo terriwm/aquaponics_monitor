@@ -12,13 +12,16 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
-const AndroidInitializationSettings androidInit = AndroidInitializationSettings('app_icon');
+const AndroidInitializationSettings androidInit =
+    AndroidInitializationSettings('app_icon');
 const IOSInitializationSettings iOSInit = IOSInitializationSettings();
 
-const  InitializationSettings initializationSettings = InitializationSettings(android: androidInit, iOS: iOSInit);
-final FlutterLocalNotificationsPlugin notifications = FlutterLocalNotificationsPlugin();
-
+const InitializationSettings initializationSettings =
+    InitializationSettings(android: androidInit, iOS: iOSInit);
+final FlutterLocalNotificationsPlugin notifications =
+    FlutterLocalNotificationsPlugin();
 
 Map settings = {
   'ph': {'max': 0.0, 'min': 0.0},
@@ -124,7 +127,7 @@ class _HomePageState extends State<HomePage> {
 
     Map aquaponicsData = jsonDecode(seneyeResp.body);
     Map weatherData = jsonDecode(weatherResp.body);
-    if (!(aquaponicsData.containsKey("message") || weatherData["cod"] != 200)) {
+    if (!aquaponicsData.containsKey("message")) {
       setState(() {
         data['ph'] = double.parse(aquaponicsData['ph']['curr']);
         data['waterTemp'] = double.parse(aquaponicsData['temperature']['curr']);
@@ -137,6 +140,32 @@ class _HomePageState extends State<HomePage> {
         data['wind'] = weatherData['wind']['speed'];
         data['airPressure'] = weatherData['main']['pressure'].toDouble();
       });
+    } else {
+      Fluttertoast.showToast(
+        msg: "Error Within Aquaponics API:\nEnsure Password and Username is Correct",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: const Color.fromARGB(179, 255, 255, 255),
+        textColor: Colors.black,
+        fontSize: 14.0
+    );
+    }
+    if (weatherData["cod"] == 200) {
+      data['outsideTemp'] = kelvinToCelcius(weatherData['main']['temp']);
+      data['humidity'] = weatherData['main']['humidity'].toDouble();
+      data['wind'] = weatherData['wind']['speed'];
+      data['airPressure'] = weatherData['main']['pressure'].toDouble();
+    } else {
+      Fluttertoast.showToast(
+        msg: "Error Within Weather API:\nEnsure Password and Username is Correct",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: const Color.fromARGB(179, 255, 255, 255),
+        textColor: Colors.black,
+        fontSize: 14.0
+    );
     }
 
     int index = 0;

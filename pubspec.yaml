@@ -38,6 +38,7 @@ dependencies:
   google_fonts: ^2.2.0
   http: ^0.13.0
   flutter_local_notifications: ^9.2.0
+  fluttertoast: ^8.0.9
 
 
 dev_dependencies:
